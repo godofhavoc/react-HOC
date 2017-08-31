@@ -21,12 +21,13 @@ const monitor = (component) =>
         }
     }
 
+@monitor
 class App extends Component {
     render(){
         return <button>Slick Button</button>;
     }
 }
 
-App = monitor(App)
+// App = monitor(App)
 
 export default App
