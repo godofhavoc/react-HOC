@@ -21,6 +21,48 @@ const monitor = (component) =>
         }
     }
 
+const fetchData = (dataDepsFn) => (Component) =>
+    class extends React.Component {
+        state = {
+            isLoading: true,
+            data: {}
+        };
+
+        componentDidMount() {
+            const dataDeps = dataDepsFn(this.props);
+            const promises = Object.keys(dataDeps)
+                .map(key => fetch(dataDeps[key], key));
+
+            const mergeData = (obj, data) => ({ ...obj, ...data });
+
+            Promise.all(promises)
+                .then(data => data.reduce(mergeData, {}))
+                .then(dataObj => this.setState({
+                    data: dataObj,
+                    isLoading: false
+                }));
+        }
+
+        render() {
+            const { isLoading, data } = this.state;
+            return isLoading ? <Loader /> : <Component { ...this.props } { ...data } />;
+        }
+    }
+
+const dataDependencies = (props) => {
+    user: `/api/user/${props.userId}`
+};
+
+@fetchData(dataDependencies)
+class User extends React.Component {
+    render() {
+        const { user } = this.props;
+        return (
+            <div>User: { user.name }</div>
+        );
+    }
+}
+
 @monitor
 class App extends Component {
     render(){
